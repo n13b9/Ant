@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminQuestionsPage() {
   const questions = await sql`
-    select q.id, q.text, q.created_at,
+    select q.id, q.text, q.is_demo, q.created_at,
            coalesce(json_agg(json_build_object('id', r.id, 'model', r.model, 'content', r.content)
              order by r.created_at) filter (where r.id is not null), '[]') as responses
     from questions q

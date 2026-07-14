@@ -4,6 +4,7 @@
 create table if not exists questions (
   id uuid primary key default gen_random_uuid(),
   text text not null,
+  is_demo boolean not null default false,
   created_at timestamptz not null default now()
 );
 

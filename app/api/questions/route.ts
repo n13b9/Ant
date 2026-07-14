@@ -6,7 +6,7 @@ export async function GET() {
   if (!(await isAdmin())) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const questions = await sql`
-    select q.id, q.text, q.created_at,
+    select q.id, q.text, q.is_demo, q.created_at,
            coalesce(json_agg(json_build_object('id', r.id, 'model', r.model, 'content', r.content)
              order by r.created_at) filter (where r.id is not null), '[]') as responses
     from questions q
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "text required" }, { status: 400 });
 
   const [row] = await sql`
-    insert into questions (text) values (${text.trim()}) returning id, text, created_at
+    insert into questions (text) values (${text.trim()}) returning id, text, is_demo, created_at
   `;
   return NextResponse.json(row);
 }

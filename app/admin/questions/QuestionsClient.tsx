@@ -2,13 +2,28 @@
 import { useState } from "react";
 
 type Response = { id: string; model: string; content: string };
-type Question = { id: string; text: string; created_at: string; responses: Response[] };
+type Question = { id: string; text: string; is_demo: boolean; created_at: string; responses: Response[] };
 
 export default function QuestionsClient({ initialQuestions }: { initialQuestions: Question[] }) {
   const [questions, setQuestions] = useState(initialQuestions);
   const [newText, setNewText] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [clearingDemo, setClearingDemo] = useState(false);
   const [error, setError] = useState("");
+  const hasDemoData = questions.some((q) => q.is_demo);
+
+  async function clearDemoData() {
+    if (!confirm("Remove all demo questions, responses, and feedback? This can't be undone.")) return;
+    setClearingDemo(true);
+    setError("");
+    const res = await fetch("/api/admin/demo", { method: "DELETE" });
+    setClearingDemo(false);
+    if (!res.ok) {
+      setError("Failed to clear demo data");
+      return;
+    }
+    setQuestions(questions.filter((q) => !q.is_demo));
+  }
 
   async function addQuestion(e: React.FormEvent) {
     e.preventDefault();
@@ -51,7 +66,18 @@ export default function QuestionsClient({ initialQuestions }: { initialQuestions
 
   return (
     <main className="max-w-3xl mx-auto p-6">
-      <h1 className="text-xl font-semibold text-slate-800 mb-1">Questions</h1>
+      <div className="flex items-start justify-between gap-4 mb-1">
+        <h1 className="text-xl font-semibold text-slate-800">Questions</h1>
+        {hasDemoData && (
+          <button
+            onClick={clearDemoData}
+            disabled={clearingDemo}
+            className="btn-ghost text-xs px-3 py-1.5 shrink-0 text-rose-600 hover:bg-rose-50"
+          >
+            {clearingDemo ? "Clearing…" : "Clear demo data"}
+          </button>
+        )}
+      </div>
       <p className="text-sm text-slate-500 mb-6">Add interview questions and generate AI responses for reviewers to rate.</p>
 
       <form onSubmit={addQuestion} className="flex gap-2 mb-6">
@@ -79,7 +105,10 @@ export default function QuestionsClient({ initialQuestions }: { initialQuestions
           {questions.map((q) => (
             <div key={q.id} className="card p-5">
               <div className="flex justify-between items-start gap-4 mb-3">
-                <p className="font-medium text-slate-800">{q.text}</p>
+                <p className="font-medium text-slate-800">
+                  {q.text}
+                  {q.is_demo && <span className="badge-neutral ml-2 align-middle">Demo</span>}
+                </p>
                 <button
                   onClick={() => generate(q.id)}
                   disabled={busyId === q.id}

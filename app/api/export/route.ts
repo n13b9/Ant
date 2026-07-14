@@ -1,5 +1,6 @@
 import { isAdmin } from "@/lib/admin";
 import { sql } from "@/lib/db";
+import { RATING_LABELS } from "@/lib/ratings";
 
 export async function GET() {
   if (!(await isAdmin())) return new Response("unauthorized", { status: 401 });
@@ -19,7 +20,7 @@ export async function GET() {
   const csv = [
     header,
     ...rows.map((r) =>
-      [r.question, r.model, r.response, r.reviewer, r.rating, r.comment, r.created_at]
+      [r.question, r.model, r.response, r.reviewer, RATING_LABELS[r.rating as number] ?? r.rating, r.comment, r.created_at]
         .map(esc)
         .join(",")
     ),

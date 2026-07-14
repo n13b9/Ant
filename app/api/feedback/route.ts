@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { sql } from "@/lib/db";
 import { verify } from "@/lib/session";
+import { isValidRating } from "@/lib/ratings";
 
 export async function POST(req: Request) {
   const raw = (await cookies()).get("rv_session")?.value;
@@ -9,7 +10,7 @@ export async function POST(req: Request) {
   if (!inviteId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const { responseId, rating, comment } = await req.json();
-  if (!responseId || !["good", "poor"].includes(rating))
+  if (!responseId || !isValidRating(rating))
     return NextResponse.json({ error: "bad input" }, { status: 400 });
 
   await sql`

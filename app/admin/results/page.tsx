@@ -7,8 +7,11 @@ export const dynamic = "force-dynamic";
 export default async function AdminResultsPage() {
   const summary = await sql`
     select r.id, q.text as question, r.model,
-           count(f.id) filter (where f.rating = 'good') as good,
-           count(f.id) filter (where f.rating = 'poor') as poor,
+           count(f.id) filter (where f.rating = 1) as poor,
+           count(f.id) filter (where f.rating = 2) as okay,
+           count(f.id) filter (where f.rating = 3) as good,
+           count(f.id) filter (where f.rating = 4) as excellent,
+           avg(f.rating) as avg_rating,
            count(f.id) as total
     from responses r
     join questions q on q.id = r.question_id

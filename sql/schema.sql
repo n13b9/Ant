@@ -29,7 +29,7 @@ create table if not exists feedback (
   id uuid primary key default gen_random_uuid(),
   response_id uuid not null references responses(id) on delete cascade,
   invite_id uuid not null references invites(id) on delete cascade,
-  rating text not null check (rating in ('good', 'poor')),
+  rating smallint not null check (rating between 1 and 4), -- 1=Poor 2=Okay 3=Good 4=Excellent
   comment text,
   created_at timestamptz not null default now(),
   unique (response_id, invite_id)

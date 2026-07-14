@@ -1,10 +1,35 @@
 "use client";
 import { useState } from "react";
+import { RATING_LABELS } from "@/lib/ratings";
 
-type Summary = { id: string; question: string; model: string; good: string; poor: string; total: string };
-type Comment = { response_id: string; rating: string; comment: string; reviewer: string | null };
+type Summary = {
+  id: string;
+  question: string;
+  model: string;
+  poor: string;
+  okay: string;
+  good: string;
+  excellent: string;
+  avg_rating: string | null;
+  total: string;
+};
+type Comment = { response_id: string; rating: number; comment: string; reviewer: string | null };
 
 const MIN_SAMPLE = 3;
+
+const SEGMENT_STYLES: Record<number, string> = {
+  1: "bg-rose-400",
+  2: "bg-amber-400",
+  3: "bg-lime-400",
+  4: "bg-emerald-500",
+};
+
+const BADGE_STYLES: Record<number, string> = {
+  1: "border-rose-500 bg-rose-50 text-rose-700",
+  2: "border-amber-500 bg-amber-50 text-amber-700",
+  3: "border-lime-500 bg-lime-50 text-lime-700",
+  4: "border-emerald-500 bg-emerald-50 text-emerald-700",
+};
 
 export default function ResultsClient({ summary, comments }: { summary: Summary[]; comments: Comment[] }) {
   const [selected, setSelected] = useState<string | null>(null);
@@ -35,8 +60,13 @@ export default function ResultsClient({ summary, comments }: { summary: Summary[
             ) : (
               summary.map((r) => {
                 const total = Number(r.total);
-                const good = Number(r.good);
-                const pct = total > 0 ? Math.round((good / total) * 100) : 0;
+                const counts: Record<number, number> = {
+                  1: Number(r.poor),
+                  2: Number(r.okay),
+                  3: Number(r.good),
+                  4: Number(r.excellent),
+                };
+                const avg = r.avg_rating ? Number(r.avg_rating) : null;
                 return (
                   <tr
                     key={r.id}
@@ -55,15 +85,19 @@ export default function ResultsClient({ summary, comments }: { summary: Summary[
                       ) : (
                         <div>
                           <div className="flex items-center gap-2">
-                            <div className="h-1.5 w-16 rounded-full bg-rose-100 overflow-hidden">
-                              <div
-                                className={`h-full ${total < MIN_SAMPLE ? "bg-slate-300" : "bg-emerald-500"}`}
-                                style={{ width: `${pct}%` }}
-                              />
+                            <div className="h-1.5 w-16 rounded-full bg-slate-100 overflow-hidden flex">
+                              {total < MIN_SAMPLE ? (
+                                <div className="h-full w-full bg-slate-300" />
+                              ) : (
+                                [1, 2, 3, 4].map((v) => {
+                                  const pct = (counts[v] / total) * 100;
+                                  return pct > 0 ? (
+                                    <div key={v} className={`h-full ${SEGMENT_STYLES[v]}`} style={{ width: `${pct}%` }} />
+                                  ) : null;
+                                })
+                              )}
                             </div>
-                            <span className="text-xs text-slate-500">
-                              {r.good}👍 {r.poor}👎
-                            </span>
+                            <span className="text-xs text-slate-500">{avg !== null ? avg.toFixed(1) : "—"} / 4</span>
                           </div>
                           {total < MIN_SAMPLE && (
                             <p className="text-[11px] text-slate-400 mt-0.5">needs more ratings</p>
@@ -91,11 +125,9 @@ export default function ResultsClient({ summary, comments }: { summary: Summary[
                 <li key={i} className="card p-4 text-sm">
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="font-medium text-slate-700">{c.reviewer || "Anonymous"}</span>
-                    {c.rating === "good" ? (
-                      <span className="badge-good">👍 Good</span>
-                    ) : (
-                      <span className="badge-poor">👎 Poor</span>
-                    )}
+                    <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${BADGE_STYLES[c.rating]}`}>
+                      {RATING_LABELS[c.rating]}
+                    </span>
                   </div>
                   <p className="text-slate-600">{c.comment}</p>
                 </li>

@@ -1,11 +1,19 @@
 "use client";
 import { useState } from "react";
+import { RATINGS, type RatingValue } from "@/lib/ratings";
 
 type Item = { id: string; content: string; model: string; question: string };
 
+const RATING_STYLES: Record<RatingValue, string> = {
+  1: "border-rose-500 bg-rose-50 text-rose-700",
+  2: "border-amber-500 bg-amber-50 text-amber-700",
+  3: "border-lime-500 bg-lime-50 text-lime-700",
+  4: "border-emerald-500 bg-emerald-50 text-emerald-700",
+};
+
 export default function ReviewClient({ items }: { items: Item[] }) {
   const [idx, setIdx] = useState(0);
-  const [rating, setRating] = useState<"good" | "poor" | null>(null);
+  const [rating, setRating] = useState<RatingValue | null>(null);
   const [comment, setComment] = useState("");
   const [busy, setBusy] = useState(false);
   const item = items[idx];
@@ -68,27 +76,20 @@ export default function ReviewClient({ items }: { items: Item[] }) {
 
       <div className="sticky bottom-0 shrink-0 border-t border-slate-200 bg-white/95 backdrop-blur px-4 py-4">
         <div className="w-full max-w-xl mx-auto">
-          <div className="flex gap-3 mb-3">
-            <button
-              onClick={() => setRating("good")}
-              className={`flex-1 rounded-lg border py-3 text-sm font-medium transition-colors ${
-                rating === "good"
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                  : "border-slate-200 text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              👍 Good
-            </button>
-            <button
-              onClick={() => setRating("poor")}
-              className={`flex-1 rounded-lg border py-3 text-sm font-medium transition-colors ${
-                rating === "poor"
-                  ? "border-rose-500 bg-rose-50 text-rose-700"
-                  : "border-slate-200 text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              👎 Poor
-            </button>
+          <div className="grid grid-cols-4 gap-2 mb-3">
+            {RATINGS.map((r) => (
+              <button
+                key={r.value}
+                onClick={() => setRating(r.value)}
+                className={`rounded-lg border py-2.5 text-xs sm:text-sm font-medium transition-colors ${
+                  rating === r.value
+                    ? RATING_STYLES[r.value]
+                    : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
           </div>
           <textarea
             value={comment}

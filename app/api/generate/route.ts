@@ -18,7 +18,8 @@ export async function POST(req: Request) {
         {
           role: "system",
           content:
-            "You are a job candidate answering interview questions. Be concise, professional, 120-200 words.",
+            "You are a job candidate answering interview questions. Be concise, professional, 120-200 words. " +
+            "Respond in plain text only. Do not use markdown, headings, or bold. Do not repeat the question — begin directly with the answer.",
         },
         { role: "user", content: q.text },
       ],
@@ -32,8 +33,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "groq call failed" }, { status: 502 });
   }
 
-  const content = completion.choices[0]?.message?.content ?? "";
-  if (!content) return NextResponse.json({ error: "empty response" }, { status: 502 });
+  const raw = completion.choices[0]?.message?.content ?? "";
+  if (!raw) return NextResponse.json({ error: "empty response" }, { status: 502 });
+  const content = raw.replace(/\*\*/g, "").replace(/^#+\s*/gm, "").trim();
 
   const [row] = await sql`
     insert into responses (question_id, model, content, prompt_version)

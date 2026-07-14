@@ -26,26 +26,28 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="max-w-sm mx-auto p-6 mt-20">
-      <h1 className="text-xl font-semibold mb-4">Admin login</h1>
-      <form onSubmit={submit} className="space-y-3">
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          className="w-full border rounded-lg p-3"
-          autoFocus
-        />
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        <button
-          type="submit"
-          disabled={busy || !password}
-          className="w-full bg-black text-white rounded-lg py-2 disabled:opacity-40"
-        >
-          Log in
-        </button>
-      </form>
+    <main className="flex flex-1 items-center justify-center p-6">
+      <div className="card w-full max-w-sm p-8">
+        <div className="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600 text-white">
+          ✦
+        </div>
+        <h1 className="text-lg font-semibold text-center mb-1">Admin login</h1>
+        <p className="text-sm text-slate-500 text-center mb-6">Sign in to manage questions and invites.</p>
+        <form onSubmit={submit} className="space-y-3">
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            className="input"
+            autoFocus
+          />
+          {error && <p className="text-rose-600 text-sm">{error}</p>}
+          <button type="submit" disabled={busy || !password} className="btn-primary w-full">
+            {busy ? "Signing in…" : "Log in"}
+          </button>
+        </form>
+      </div>
     </main>
   );
 }

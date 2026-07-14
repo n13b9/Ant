@@ -23,9 +23,15 @@ export async function POST(req: Request) {
   const { label } = await req.json();
   const token = crypto.randomBytes(24).toString("hex");
 
+  let finalLabel = typeof label === "string" ? label.trim() : "";
+  if (!finalLabel) {
+    const [{ count }] = await sql`select count(*)::int as count from invites`;
+    finalLabel = `Reviewer ${count + 1}`;
+  }
+
   const [invite] = await sql`
     insert into invites (token, label, expires_at)
-    values (${token}, ${label || null}, now() + interval '30 days')
+    values (${token}, ${finalLabel}, now() + interval '30 days')
     returning id
   `;
 

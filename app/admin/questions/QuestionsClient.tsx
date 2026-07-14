@@ -51,48 +51,59 @@ export default function QuestionsClient({ initialQuestions }: { initialQuestions
 
   return (
     <main className="max-w-3xl mx-auto p-6">
-      <h1 className="text-xl font-semibold mb-4">Questions</h1>
+      <h1 className="text-xl font-semibold text-slate-800 mb-1">Questions</h1>
+      <p className="text-sm text-slate-500 mb-6">Add interview questions and generate AI responses for reviewers to rate.</p>
 
       <form onSubmit={addQuestion} className="flex gap-2 mb-6">
         <input
           value={newText}
           onChange={(e) => setNewText(e.target.value)}
           placeholder="New interview question"
-          className="flex-1 border rounded-lg p-2"
+          className="input flex-1"
         />
-        <button className="bg-black text-white rounded-lg px-4 py-2">Add</button>
+        <button className="btn-primary shrink-0">Add</button>
       </form>
 
-      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
+      {error && (
+        <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
+          {error}
+        </div>
+      )}
 
-      <div className="space-y-6">
-        {questions.map((q) => (
-          <div key={q.id} className="border rounded-lg p-4">
-            <div className="flex justify-between items-start gap-4 mb-2">
-              <p className="font-medium">{q.text}</p>
-              <button
-                onClick={() => generate(q.id)}
-                disabled={busyId === q.id}
-                className="shrink-0 border rounded-lg px-3 py-1 text-sm disabled:opacity-40"
-              >
-                {busyId === q.id ? "Generating…" : "Generate response"}
-              </button>
+      {questions.length === 0 ? (
+        <div className="card p-10 text-center text-sm text-slate-400">
+          No questions yet. Add one above to get started.
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {questions.map((q) => (
+            <div key={q.id} className="card p-5">
+              <div className="flex justify-between items-start gap-4 mb-3">
+                <p className="font-medium text-slate-800">{q.text}</p>
+                <button
+                  onClick={() => generate(q.id)}
+                  disabled={busyId === q.id}
+                  className="btn-secondary text-xs px-3 py-1.5 shrink-0"
+                >
+                  {busyId === q.id ? "Generating…" : "Generate response"}
+                </button>
+              </div>
+              {q.responses.length === 0 ? (
+                <p className="text-sm text-slate-400">No responses yet</p>
+              ) : (
+                <ul className="space-y-2">
+                  {q.responses.map((r) => (
+                    <li key={r.id} className="text-sm bg-slate-50 border border-slate-200 rounded-lg p-3">
+                      <p className="badge-neutral mb-2">{r.model}</p>
+                      <p className="whitespace-pre-wrap text-slate-700 leading-relaxed">{r.content}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-            {q.responses.length === 0 ? (
-              <p className="text-sm text-gray-400">No responses yet</p>
-            ) : (
-              <ul className="space-y-2">
-                {q.responses.map((r) => (
-                  <li key={r.id} className="text-sm bg-gray-50 border rounded-lg p-3">
-                    <p className="text-gray-400 mb-1">{r.model}</p>
-                    <p className="whitespace-pre-wrap">{r.content}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </main>
   );
 }
